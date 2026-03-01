@@ -1,0 +1,12 @@
+# POST http://localhost:8000/vehicles
+# Content-Type: application/json
+
+# {
+#   "id": 140,
+#   "user_id": 1,
+#   "vehicle_number": "ABC123",
+#   "model": "Model S",
+#   "manufacturer": "Tesla",
+#   "year": 2020
+# }
+GET http://localhost:8000/vehicles

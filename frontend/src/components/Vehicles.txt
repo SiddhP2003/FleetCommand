@@ -1,0 +1,97 @@
+// import { useState } from "react";
+// import { Car, MoreVertical, Gauge } from "lucide-react";
+// import { Vehicle, statusColors } from "@/lib/mock-data";
+// import { cn } from "@/lib/utils";
+// import { VehicleDetailDialog } from "./VehicleDetailDialog";
+
+// interface VehicleCardProps {
+//   vehicle: Vehicle;
+// }
+
+// export function VehicleCard({ vehicle }: VehicleCardProps) {
+//   const [dialogOpen, setDialogOpen] = useState(false);
+
+//   return (
+//     <>
+//       <div className="stat-card group cursor-pointer" onClick={() => setDialogOpen(true)}>
+//         <div className="flex items-start justify-between mb-3">
+//           <div className="flex items-center gap-3">
+//             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+//               <Car className="w-5 h-5 text-primary" />
+//             </div>
+//             <div>
+//               <h3 className="font-semibold text-foreground text-sm">
+//                 {vehicle.year} {vehicle.make} {vehicle.model}
+//               </h3>
+//               <p className="text-xs text-muted-foreground font-mono">{vehicle.plate}</p>
+//             </div>
+//           </div>
+//           <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted">
+//             <MoreVertical className="w-4 h-4 text-muted-foreground" />
+//           </button>
+//         </div>
+
+//         <div className="flex items-center justify-between">
+//           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+//             <Gauge className="w-3.5 h-3.5" />
+//             <span>{vehicle.mileage.toLocaleString()} mi</span>
+//           </div>
+//           <span className={cn("badge-status capitalize", statusColors[vehicle.status])}>
+//             {vehicle.status}
+//           </span>
+//         </div>
+
+//         <div className="mt-3 pt-3 border-t border-border">
+//           <p className="text-xs text-muted-foreground">
+//             Owner: <span className="text-foreground font-medium">{vehicle.ownerName}</span>
+//           </p>
+//         </div>
+//       </div>
+
+//       <VehicleDetailDialog vehicle={vehicle} open={dialogOpen} onOpenChange={setDialogOpen} />
+//     </>
+//   );
+// }
+import React, { useEffect, useState } from 'react';
+import api from "../api.js";
+import AddFruitForm from './AddVehicleForm';
+
+const FruitList = () => {
+  const [fruits, setFruits] = useState([]);
+
+  const fetchFruits = async () => {
+    try {
+      const response = await api.get('/fruits');
+      setFruits(response.data.fruits);
+    } catch (error) {
+      console.error("Error fetching fruits", error);
+    }
+  };
+
+  const addVehicle = async (vehicleName) => {
+    try {
+      await api.post('/vehicles', { name: vehicleName });
+      fetchFruits();  // Refresh the list after adding a fruit
+    } catch (error) {
+      console.error("Error adding fruit", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFruits();
+  }, []);
+
+  return (
+    <div>
+      <h2>Fruits List</h2>
+      <ul>
+        {fruits.map((fruit, index) => (
+          <li key={index}>{fruit.name}</li>
+        ))}
+      </ul>
+      <AddFruitForm addFruit={addVehicle} />
+    </div>
+  );
+};
+
+export default FruitList;
