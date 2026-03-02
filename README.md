@@ -106,7 +106,7 @@ User (1) ────< Vehicle (1) ────< MaintenanceRecord
 # Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/vehicle-management-system.git
+git clone https://github.com/your-username/FleetCommand.git
 cd vehicle-management-system
 ```
 
@@ -164,7 +164,7 @@ CREATE DATABASE vehicle_management;
 Create a `.env` file inside `/backend`:
 
 ```
-DATABASE_URL=mysql+pymysql://root:password@localhost/vehicle_management
+DATABASE_URL=mysql+pymysql://root:password@localhost/fleetcommand
 ```
 
 Replace `root` and `password` with your MySQL credentials.
