@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVehicles, addVehicle, getServiceRecords, addServiceRecord } from '@/lib/store';
-import { Vehicle, SERVICE_TYPES } from '@/types';
+import { User, Vehicle, MaintenanceRecord, SERVICE_TYPES} from '@/types';
+//import { getVehicles, addVehicle, getServiceRecords, addServiceRecord } from '@/lib/store';
+import api from "src/api";
+//import { Vehicle, SERVICE_TYPES } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,11 +16,15 @@ import { toast } from 'sonner';
 
 const VehiclesPage = () => {
   const { user } = useAuth();
-  const [refresh, setRefresh] = useState(0);
-  const vehicles = getVehicles(user?.id);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  //const [refresh, setRefresh] = useState(0);
+
+  const [vehicles, createVehicles] = useState<Vehicle[]>([]);
+  const [maintenanceRecords, createMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [addVehicleOpen, setAddVehicleOpen] = useState(false);
-  const [addRecordVehicleId, setAddRecordVehicleId] = useState<string | null>(null);
+  const [addRecordVehicleId, setAddRecordVehicleId] = useState<number | null>(null);
 
   // Add vehicle form
   const [vNumber, setVNumber] = useState('');
@@ -32,42 +38,92 @@ const VehiclesPage = () => {
   const [sDesc, setSDesc] = useState('');
   const [sCost, setSCost] = useState('');
 
-  const handleAddVehicle = () => {
+  const fetchData = async () => {
+      try {
+
+        const vehicleRes = await api.get("/vehicles")
+        const maintenanceRes = await api.get("/maintenance/");
+
+        createVehicles(vehicleRes.data)
+        createMaintenanceRecords(maintenanceRes.data)
+
+      } catch(error) {
+        console.error("Error fetching dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    useEffect(() => {
+      fetchData();
+    }, []);
+
+
+  const handleAddVehicle = async () => {
     if (!vNumber.trim() || !vModel.trim() || !vManufacturer.trim() || !vYear.trim()) {
       toast.error('All fields are required');
       return;
     }
-    addVehicle({
-      userId: user!.id,
-      vehicleNumber: vNumber.trim(),
-      model: vModel.trim(),
-      manufacturer: vManufacturer.trim(),
-      year: parseInt(vYear),
-    });
+
+    try {
+      await api.post("/vehicles/", {
+        vehicle_number: vNumber,
+        manufacturer: vManufacturer,
+        model: vModel,
+        year: parseInt(vYear)
+      });
+    
+    // addVehicle({
+    //   userId: user!.id,
+    //   vehicleNumber: vNumber.trim(),
+    //   model: vModel.trim(),
+    //   manufacturer: vManufacturer.trim(),
+    //   year: parseInt(vYear),
+    // });
     toast.success('Vehicle added!');
-    setVNumber(''); setVModel(''); setVManufacturer(''); setVYear('');
+    setVNumber(""); setVModel(""); setVManufacturer(""); setVYear("");
     setAddVehicleOpen(false);
-    setRefresh(r => r + 1);
+    fetchData();
+  } catch (err) {
+    toast.error("Failed to add vehicle");
+  }
   };
 
-  const handleAddRecord = () => {
-    if (!sDate || !sType || !sCost) {
+  const handleAddRecord = async () => {
+    if (!sDate || !sType || !sCost || !addRecordVehicleId) {
       toast.error('Date, type and cost are required');
       return;
     }
-    addServiceRecord({
-      vehicleId: addRecordVehicleId!,
-      userId: user!.id,
-      serviceDate: sDate,
-      serviceType: sType,
-      description: sDesc.trim(),
-      cost: parseFloat(sCost),
-    });
-    toast.success('Service record added!');
-    setSDate(''); setSType(''); setSDesc(''); setSCost('');
-    setAddRecordVehicleId(null);
-    setRefresh(r => r + 1);
+
+    try {
+      await api.post("/maintenance/", {
+        vehicle_id: addRecordVehicleId,
+        service_date: sDate, 
+        service_type: sType,
+        description: sDesc,
+        cost: parseFloat(sCost),
+      });
+    
+    // addServiceRecord({
+    //   vehicleId: addRecordVehicleId!,
+    //   userId: user!.id,
+    //   serviceDate: sDate,
+    //   serviceType: sType,
+    //   description: sDesc.trim(),
+    //   cost: parseFloat(sCost),
+    // });
+      toast.success('Service record added!');
+      setSDate(''); setSType(''); setSDesc(''); setSCost('');
+      setAddRecordVehicleId(null);
+      fetchData();
+    //setRefresh(r => r + 1);
+    } catch (err) {
+      toast.error("Failed to add record");
+    }
   };
+
+  if (loading) return <div>Loading...</div>
+
 
   return (
     <div className="space-y-6">

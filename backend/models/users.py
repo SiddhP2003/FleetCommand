@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 from db.base import Base
 
 class User(Base):
@@ -9,3 +10,6 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     is_admin = Column(Boolean, default=False)
+
+    vehicles = relationship("Vehicle", backref="owner")
+

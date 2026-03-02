@@ -10,4 +10,5 @@ class Vehicle(Base):
     model = Column(String(100), nullable=False)
     manufacturer = Column(String(100), nullable=False)
     year = Column(Integer, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    

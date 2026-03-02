@@ -1,15 +1,21 @@
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  role: 'user' | 'admin';
-  createdAt: string;
+  id: number;
+  vehicle_number: string;
+  model: string;
+  manufacturer: string;
+  year: number;
+  owner_id: number;
+  is_admin: boolean;
 }
+  // id = Column(Integer, primary_key=True, index=True)
+  //   name = Column(String(255), nullable=False)
+  //   email = Column(String(255), unique=True, nullable=False)
+  //   password = Column(String(255), nullable=False)
+  //   is_admin = Column(Boolean, default=False)
 
 export interface Vehicle {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
   vehicleNumber: string;
   model: string;
   manufacturer: string;
@@ -17,15 +23,13 @@ export interface Vehicle {
   createdAt: string;
 }
 
-export interface ServiceRecord {
-  id: string;
-  vehicleId: string;
-  userId: string;
-  serviceDate: string;
-  serviceType: string;
+export interface MaintenanceRecord {
+  id: number;
+  service_date: string;
+  service_type: string;
   description: string;
   cost: number;
-  createdAt: string;
+  vehicle_id: number;
 }
 
 export const SERVICE_TYPES = [

@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Car, Users, Wrench, DollarSign } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const users = getAllUsers().filter(u => u.role !== 'admin');
+  const users = getAllUsers().filter(u => u.is_admin == false);
   const vehicles = getVehicles();
   const records = getServiceRecords();
   const totalCost = records.reduce((sum, r) => sum + r.cost, 0);

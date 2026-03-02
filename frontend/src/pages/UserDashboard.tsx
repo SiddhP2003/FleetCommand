@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { User, Vehicle, MaintenanceRecord} from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVehicles, addVehicle, getServiceRecords } from '@/lib/store';
+//import { getVehicles, addVehicle, getServiceRecords } from '@/lib/store';
+import api from "src/api";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +12,74 @@ import { Car, Plus, Wrench, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
+
+  // id = Column(Integer, primary_key=True)
+  //   service_date = Column(Date, nullable=False)
+  //   service_type = Column(String(100), nullable=False)
+  //   description = Column(String(255))
+  //   cost = Column(Float, nullable=False)
+  //   vehicle_id = Column(Integer, ForeignKey("vehicles.id"), nullable=False)
+// interface User {
+//    id: number;
+//   vehicle_number: string;
+//   model: string;
+//   manufacturer: string;
+//   year: number;
+//   owner_id: number;
+// }
+// interface Vehicle {
+//   id: string;
+//   userId: string;
+//   vehicleNumber: string;
+//   model: string;
+//   manufacturer: string;
+//   year: number;
+//   createdAt: string;
+// }
+
+// interface MaintenanceRecord {
+//   id: number;
+//   service_date: string;
+//   service_type: string;
+//   description: string;
+//   cost: number;
+//   vehicle_id: number;
+// }
+
 const UserDashboard = () => {
   const { user } = useAuth();
-  const vehicles = getVehicles(user?.id);
-  const records = getServiceRecords({ userId: user?.id });
 
-  const totalCost = records.reduce((sum, r) => sum + r.cost, 0);
+  // const vehicles = getVehicles(user?.id);
+  // const records = getServiceRecords({ userId: user?.id });
+  const [vehicles, createVehicles] = useState<Vehicle[]>([]);
+  const [maintenanceRecords, createMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+
+        const vehicleRes = await api.get("/vehicles")
+        const maintenanceRes = await api.get("/maintenance/");
+
+        createVehicles(vehicleRes.data)
+        createMaintenanceRecords(maintenanceRes.data)
+
+      } catch(error) {
+        console.error("Error fetching dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+      fetchData();
+    }, []);
+
+   const totalCost = maintenanceRecords.reduce((sum, r) => sum + r.cost, 0);
+
+   if (loading) {
+    return <div> Loading... </div>
+   }
 
   return (
     <div className="space-y-6">
@@ -38,7 +102,7 @@ const UserDashboard = () => {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-md bg-primary/10"><Wrench className="h-5 w-5 text-primary" /></div>
               <div>
-                <p className="text-2xl font-bold">{records.length}</p>
+                <p className="text-2xl font-bold">{maintenanceRecords.length}</p>
                 <p className="text-sm text-muted-foreground">Services</p>
               </div>
             </div>
@@ -64,7 +128,7 @@ const UserDashboard = () => {
         </Link>
       </div>
 
-      {records.length === 0 ? (
+      {maintenanceRecords.length === 0 ? (
         <Card className="glass-card">
           <CardContent className="py-8 text-center text-muted-foreground">
             No service records yet. Add a vehicle and start tracking!
@@ -72,15 +136,15 @@ const UserDashboard = () => {
         </Card>
       ) : (
         <div className="space-y-2">
-          {records.slice(0, 5).map(record => {
-            const vehicle = vehicles.find(v => v.id === record.vehicleId);
+          {maintenanceRecords.slice(0, 5).map((record) => {
+            const vehicle = vehicles.find(v => v.id === record.vehicle_id);
             return (
               <Card key={record.id} className="glass-card">
                 <CardContent className="py-3 flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-sm">{record.serviceType}</p>
+                    <p className="font-medium text-sm">{record.service_type}</p>
                     <p className="text-xs text-muted-foreground">
-                      {vehicle?.manufacturer} {vehicle?.model} • {record.serviceDate}
+                      {vehicle.manufacturer} {vehicle.model} • {record.service_date}
                     </p>
                   </div>
                   <span className="text-sm font-mono text-primary">${record.cost}</span>

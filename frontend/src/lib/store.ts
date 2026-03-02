@@ -1,4 +1,4 @@
-import { User, Vehicle, ServiceRecord } from '@/types';
+import { User, Vehicle, MaintenanceRecord} from '@/types';
 
 const USERS_KEY = 'vm_users';
 const VEHICLES_KEY = 'vm_vehicles';
